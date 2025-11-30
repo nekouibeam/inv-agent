@@ -1,4 +1,4 @@
-from langchain_core.prompts import ChatPromptTemplate
+from langchain.agents import create_agent
 from ..state import AgentState
 from ..utils import get_llm
 
@@ -23,11 +23,22 @@ def risk_manager_node(state: AgentState):
     4. **Risk Score (風險評分)**: Assign a score (1-10) with justification.
     
     Be conservative. If the stock is "priced for perfection," highlight that as a major risk.
+    
+    **IMPORTANT**: Start directly with the analysis. Do NOT use introductory phrases like "As a Chief Risk Officer..." or "Here is my assessment...". Go straight to the first section.
     """
     
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", system_prompt),
-        ("human", """User Query:
+    # Create the agent
+    agent = create_agent(
+        model=llm,
+        tools=[],
+        system_prompt=system_prompt
+    )
+    
+    user_query = state.get("query", "No specific query provided.")
+    data_analysis = state.get("data_analysis", "No data analysis provided.")
+    news_analysis = state.get("news_analysis", "No news analysis provided.")
+    
+    user_message = f"""User Query:
 {user_query}
 
 Data Analysis:
@@ -36,14 +47,12 @@ Data Analysis:
 News Analysis:
 {news_analysis}
 
-Please provide your risk assessment.""")
-    ])
+Please provide your risk assessment."""
     
-    chain = prompt | llm
-    response = chain.invoke({
-        "user_query": state.get("query", "No specific query provided."),
-        "data_analysis": state.get("data_analysis", "No data analysis provided."),
-        "news_analysis": state.get("news_analysis", "No news analysis provided.")
-    })
+    # Invoke the agent
+    result = agent.invoke({"messages": [("human", user_message)]})
     
-    return {"risk_assessment": response.content}
+    # The result contains the full state of the agent, including messages.
+    last_message = result["messages"][-1]
+    
+    return {"risk_assessment": last_message.content}

@@ -20,10 +20,18 @@ def data_analyst_node(state: AgentState):
     5. **Analyst Consensus**: Summarize the street's view (Target Prices, Recommendations).
     
     Output a structured analysis in **Traditional Chinese (繁體中文)**. Do not just list numbers; interpret them.
-    - **Direct Answer to User (針對用戶問題的數據回應)**: What does the data say about their specific concern?
-    - **Valuation Verdict (估值判斷)**: Undervalued / Fair / Overvalued (with justification).
-    - **Quality Score (品質評分)**: High / Medium / Low (based on margins & ROE).
-    - **Growth Outlook (成長展望)**: Strong / Moderate / Weak.
+    
+    **CRITICAL OUTPUT FORMAT**:
+    - **Valuation Analysis (估值分析)**: Detailed breakdown of P/E, PEG, etc. with a verdict (Undervalued/Fair/Overvalued).
+    - **Financial Health (財務健康)**: Analysis of Margins, ROE, and Balance Sheet strength.
+    - **Growth Prospects (成長前景)**: Assessment of Revenue and Earnings growth rates.
+    - **Analyst Consensus (分析師共識)**: Summary of target prices and buy/sell recommendations.
+    - **Key Metrics Summary (關鍵指標摘要)**: A clear table or bulleted list of the most critical numbers (e.g., P/E, EPS, Revenue Growth).
+    
+    **IMPORTANT**: 
+    Start directly with the analysis. Do NOT use introductory phrases.
+    Ensure numbers are formatted legibly (e.g., 1.2B, 35%).
+    If comparing multiple tickers, a comparison table is highly recommended.
     """
     
     # Create the agent
@@ -35,13 +43,22 @@ def data_analyst_node(state: AgentState):
     
     tickers = state["tickers"]
     query = state["query"]
+    instructions = state.get("data_analyst_instructions", "")
     
+    user_message = f"""Analyze the following tickers: {tickers}. 
+
+        User's Specific Question: {query}
+
+        **Specific Instructions from Lead**:
+        {instructions}
+        """
+        
     # Invoke the agent
     # The agent expects a list of messages. We pass the task as a human message.
-    result = agent.invoke({"messages": [("human", f"Analyze the following tickers: {tickers}. \n\nUser's Specific Question: {query}")]})
+    result = agent.invoke({"messages": [("human", user_message)]})
     
     # The result contains the full state of the agent, including messages.
     # The last message should be the AI's final response.
     last_message = result["messages"][-1]
-    
+    print(last_message) 
     return {"data_analysis": last_message.content}

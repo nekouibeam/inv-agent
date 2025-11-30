@@ -1,4 +1,4 @@
-from langchain_core.prompts import ChatPromptTemplate
+from langchain.agents import create_agent
 from ..state import AgentState
 from ..utils import get_llm
 
@@ -25,9 +25,9 @@ def editor_node(state: AgentState):
         3. **Argumentative**: Don't just summarize; argue a thesis.
     
     Structure:
-    
+    不用提到{發佈日期： 2024年X月X日 分析師： [您的姓名/團隊]}
     1. **Executive Summary (執行摘要)**:
-        - **Direct Answer (直接回應)**: A narrative paragraph explicitly answering the user's question.
+        - **Direct Answer**: A narrative paragraph explicitly answering the user's question.
         - **Rating & Target**: BUY/HOLD/SELL, Target Price $X.XX.
         - **Verdict**: A concise paragraph explaining the core reasoning.
     
@@ -48,9 +48,19 @@ def editor_node(state: AgentState):
     Tone: Authoritative, professional, and decisive.
     """
     
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", system_prompt),
-        ("human", """User Query:
+    # Create the agent
+    agent = create_agent(
+        model=llm,
+        tools=[],
+        system_prompt=system_prompt
+    )
+    
+    user_query = state.get("query", "No specific query provided.")
+    data_analysis = state.get("data_analysis")
+    news_analysis = state.get("news_analysis")
+    risk_assessment = state.get("risk_assessment")
+    
+    user_message = f"""User Query:
 {user_query}
 
 Data Analysis:
@@ -62,15 +72,12 @@ News Analysis:
 Risk Assessment:
 {risk_assessment}
 
-Please generate the final Investment Memo.""")
-    ])
+Please generate the final Investment Memo."""
     
-    chain = prompt | llm
-    response = chain.invoke({
-        "user_query": state.get("query", "No specific query provided."),
-        "data_analysis": state.get("data_analysis"),
-        "news_analysis": state.get("news_analysis"),
-        "risk_assessment": state.get("risk_assessment")
-    })
+    # Invoke the agent
+    result = agent.invoke({"messages": [("human", user_message)]})
     
-    return {"final_report": response.content}
+    # The result contains the full state of the agent, including messages.
+    last_message = result["messages"][-1]
+    
+    return {"final_report": last_message.content}
