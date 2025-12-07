@@ -4,7 +4,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from src.graph import create_graph
-
+import pandas
 load_dotenv()
 
 app = FastAPI(title="Investment Agent API")
