@@ -172,13 +172,15 @@ def get_stock_data(ticker, period="1d"):
         return None, None
 
 
-def plot_google_finance_chart(history, ticker):
+# 修改後的繪圖函數：支援 line (連線圖) 和 candlestick (K 棒圖)
+def plot_stock_chart(history, ticker, chart_type='line'):
     if history.empty:
         return go.Figure()
 
     start_price = history['Close'].iloc[0]
     end_price = history['Close'].iloc[-1]
-    line_color = "#81c995" if end_price >= start_price else "#f28b82"
+    # 決定顏色 (用於連線圖，或 K 棒的線條顏色)
+    line_color = "#81c995" if end_price >= start_price else "#f28b82" 
     
     min_price = history['Low'].min()
     max_price = history['High'].max()
@@ -208,16 +210,34 @@ def plot_google_finance_chart(history, ticker):
         tick_text = [d.strftime(date_format) for d in history.index]
 
     fig = go.Figure()
-    fig.add_trace(go.Scatter(
-        x=history.index, 
-        y=history['Close'],
-        mode='lines',
-        fill='tozeroy',
-        line=dict(color=line_color, width=2),
-        fillcolor=f"rgba({int(line_color[1:3], 16)}, {int(line_color[3:5], 16)}, {int(line_color[5:7], 16)}, 0.1)",
-        name=ticker,
-        hovertemplate=f"%{{x|{hover_format}}}<br>Price: %{{y:.2f}}<extra></extra>"
-    ))
+    
+    if chart_type == 'candlestick':
+        # Candlestick 繪圖邏輯
+        fig.add_trace(go.Candlestick(
+            x=history.index,
+            open=history['Open'],
+            high=history['High'],
+            low=history['Low'],
+            close=history['Close'],
+            name=ticker,
+            increasing=dict(line=dict(color='#81c995', width=1)), # Green line
+            decreasing=dict(line=dict(color='#f28b82', width=1)), # Red line
+            hovertemplate="%{x|%b %d}<br>開: %{open:.2f}<br>高: %{high:.2f}<br>低: %{low:.2f}<br>收: %{close:.2f}<extra></extra>"
+        ))
+        # 移除 Candlestick 預設的範圍滑塊 (Range Slider)
+        fig.update_layout(xaxis_rangeslider_visible=False) 
+    else: # 'line' chart (default) 
+        # 原有的連線圖繪圖邏輯
+        fig.add_trace(go.Scatter(
+            x=history.index, 
+            y=history['Close'],
+            mode='lines',
+            fill='tozeroy',
+            line=dict(color=line_color, width=2),
+            fillcolor=f"rgba({int(line_color[1:3], 16)}, {int(line_color[3:5], 16)}, {int(line_color[5:7], 16)}, 0.1)",
+            name=ticker,
+            hovertemplate=f"%{{x|{hover_format}}}<br>Price: %{{y:.2f}}<extra></extra>"
+        ))
 
     fig.update_layout(
         margin=dict(l=0, r=0, t=0, b=0),
@@ -325,6 +345,19 @@ if 'research_result' in st.session_state:
                 index=2
             )
             selected_period_code = period_options[selected_label]
+
+            # --- ADDED: Chart Type Selection ---
+            chart_type_map = {"連線圖 (Line)": "line", "K 棒圖 (Candlestick)": "candlestick"}
+            chart_type_label = st.radio(
+                "Chart Type",
+                options=list(chart_type_map.keys()),
+                horizontal=True,
+                label_visibility="collapsed",
+                key=f"chart_type_selector_{selected_ticker}",
+                index=0,
+            )
+            selected_chart_type = chart_type_map[chart_type_label]
+            # --- END ADDED ---
             
             _, history = get_stock_data(selected_ticker, period=selected_period_code)
             current_price = info.get('currentPrice', info.get('regularMarketPrice', 0))
@@ -363,7 +396,8 @@ if 'research_result' in st.session_state:
 
             if history is not None and not history.empty:
                 st.plotly_chart(
-                    plot_google_finance_chart(history, selected_ticker),
+                    # 呼叫修改後的函數並傳遞圖表類型
+                    plot_stock_chart(history, selected_ticker, chart_type=selected_chart_type),
                     use_container_width=True,
                     config={'displayModeBar': False}
                 )
