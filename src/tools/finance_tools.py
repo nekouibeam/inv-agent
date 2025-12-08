@@ -1,87 +1,115 @@
 from langchain_core.tools import tool
 import yfinance as yf
+import pandas as pd
+
+# 讓表格對齊中文
+pd.set_option('display.unicode.east_asian_width', True)
 
 @tool
-def get_stock_data(ticker: str) -> str:
+def get_stock_analysis_data(ticker: str) -> str:
     """
-    Retrieves stock data for a given ticker symbol using yfinance.
-    Returns a summary of price history (last 1 month) and basic info.
+    Retrieves comprehensive stock data for a given ticker.
+    Includes Real-time valuation, Analyst estimates, and 5-year Financial trends.
     """
     try:
         stock = yf.Ticker(ticker)
         
-        # Get history (extended to 1 year for better trend analysis)
-        history = stock.history(period="1y")
-        if history.empty:
-            return f"No price data found for {ticker}."
-            
-        # Get info
+        # ... (Part 1: Real-Time Snapshot 保持不變) ...
         info = stock.info
         
-        # 1. Valuation Metrics
+        def fmt_num(num):
+            if isinstance(num, (int, float)):
+                if abs(num) >= 1e12: return f"{num/1e12:.2f}T"
+                if abs(num) >= 1e9: return f"{num/1e9:.2f}B"
+                if abs(num) >= 1e6: return f"{num/1e6:.2f}M"
+                return f"{num:.2f}"
+            return num
+
         valuation = {
-            "Market Cap": info.get("marketCap"),
-            "Enterprise Value": info.get("enterpriseValue"),
-            "Trailing P/E": info.get("trailingPE"),
-            "Forward P/E": info.get("forwardPE"),
-            "PEG Ratio": info.get("pegRatio"),
-            "Price/Book": info.get("priceToBook"),
-            "Price/Sales": info.get("priceToSalesTrailing12Months"),
-            "EV/EBITDA": info.get("enterpriseToEbitda"),
+            "Market Cap": fmt_num(info.get("marketCap")),
+            "Trailing P/E": fmt_num(info.get("trailingPE")),
+            "Forward P/E": fmt_num(info.get("forwardPE")),
+            "PEG Ratio": fmt_num(info.get("pegRatio")),
+            "Price/Book": fmt_num(info.get("priceToBook")),
+            "Dividend Yield": fmt_num(info.get("dividendYield")),
+            "Current ROE": fmt_num(info.get("returnOnEquity")),
+            "Current Op Margin": fmt_num(info.get("operatingMargins")) # 稍微縮短 key 名稱
         }
-        
-        # 2. Financial Health & Performance
-        financials = {
-            "Revenue Growth (YoY)": info.get("revenueGrowth"),
-            "Earnings Growth (YoY)": info.get("earningsGrowth"),
-            "Gross Margins": info.get("grossMargins"),
-            "Operating Margins": info.get("operatingMargins"),
-            "Return on Equity (ROE)": info.get("returnOnEquity"),
-            "Total Cash": info.get("totalCash"),
-            "Total Debt": info.get("totalDebt"),
-            "Free Cash Flow": info.get("freeCashflow"),
-        }
-        
-        # 3. Analyst Estimates & Targets
+
         estimates = {
-            "Target Mean Price": info.get("targetMeanPrice"),
+            "Target Mean": info.get("targetMeanPrice"), # 縮短 key 名稱
             "Target High": info.get("targetHighPrice"),
-            "Target Low": info.get("targetLowPrice"),
             "Recommendation": info.get("recommendationKey"),
-            "Number of Analyst Opinions": info.get("numberOfAnalystOpinions")
+            "Num Analysts": info.get("numberOfAnalystOpinions")
         }
-        
-        # 4. Price Performance Summary
-        current_price = history.iloc[-1]["Close"]
-        price_1mo_ago = history.iloc[-22]["Close"] if len(history) > 22 else history.iloc[0]["Close"]
-        price_6mo_ago = history.iloc[-126]["Close"] if len(history) > 126 else history.iloc[0]["Close"]
-        
-        performance = {
-            "Current Price": current_price,
-            "52 Week High": info.get("fiftyTwoWeekHigh"),
-            "52 Week Low": info.get("fiftyTwoWeekLow"),
-            "1 Month Return": f"{((current_price - price_1mo_ago) / price_1mo_ago) * 100:.2f}%",
-            "6 Month Return": f"{((current_price - price_6mo_ago) / price_6mo_ago) * 100:.2f}%",
-            "YTD Return": f"{((current_price - history.iloc[0]['Close']) / history.iloc[0]['Close']) * 100:.2f}%" # Approx YTD if 1y period
-        }
-        
+
+        # ... (Part 2: Long-Term Trends) ...
+        history = stock.history(period="5y", interval="1mo")
+        if history.empty:
+            price_trend = "No price data."
+        else:
+            start_price = history.iloc[0]['Close']
+            curr_price = history.iloc[-1]['Close']
+            total_return = ((curr_price - start_price) / start_price) * 100
+            
+            price_trend = {
+                "Period": "Last 5 Years",
+                "Start": round(start_price, 2),
+                "Current": round(curr_price, 2),
+                "Return": f"{total_return:.2f}%",
+                "High": round(history['High'].max(), 2),
+                "Low": round(history['Low'].min(), 2)
+            }
+
+        # 2. Financial Statements Helper (改用 to_string + east_asian_width)
+        def format_financials(df, key_metrics):
+            if df is None or df.empty:
+                return "Data not available"
+            
+            existing = [m for m in key_metrics if m in df.index]
+            if not existing:
+                return "Key metrics not found"
+            
+            selected = df.loc[existing]
+            # 欄位轉為年份
+            selected.columns = [col.strftime('%Y') if hasattr(col, 'strftime') else str(col) for col in selected.columns]
+            
+            # 數值格式化
+            for col in selected.columns:
+                selected[col] = selected[col].apply(lambda x: fmt_num(x) if isinstance(x, (int, float)) else x)
+            
+            # --- 這裡改用 to_string()，配合最上面的 pd.set_option，中文就會對齊了 ---
+            return selected.to_string()
+
+        # A. Income Statement
+        income_metrics = ["Total Revenue", "Gross Profit", "Operating Income", "Net Income", "Diluted EPS"]
+        income_str = format_financials(stock.financials, income_metrics)
+
+        # B. Balance Sheet
+        balance_metrics = ["Stockholders Equity", "Total Assets", "Total Debt"]
+        balance_str = format_financials(stock.balance_sheet, balance_metrics)
+
         return f"""
-        Ticker: {ticker}
+        REPORT FOR: {ticker}
         
-        --- VALUATION ---
+        --- 1. VALUATION ---
         {valuation}
         
-        --- FINANCIALS ---
-        {financials}
-        
-        --- ANALYST ESTIMATES ---
+        --- 2. ANALYST ---
         {estimates}
         
-        --- PRICE PERFORMANCE ---
-        {performance}
+        --- 3. PRICE (5y) ---
+        {price_trend}
         
-        --- RECENT PRICE DATA (Last 5 Days) ---
-        {history.tail(5)[['Open', 'High', 'Low', 'Close', 'Volume']].to_string()}
+        --- 4. INCOME TRENDS ---
+        {income_str}
+        
+        --- 5. BALANCE SHEET ---
+        {balance_str}
+        
+        --- 6. RECENT DATA ---
+        {history[['Close', 'Volume']].tail(5).to_string()}
         """
+
     except Exception as e:
-        return f"Error fetching data for {ticker}: {str(e)}"
+        return f"Error: {str(e)}"
