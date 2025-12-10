@@ -4,7 +4,10 @@ import yfinance as yf
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import re
+import os
+import json
 
+# 1. 設定 & 樣式
 # Page config
 st.set_page_config(
     page_title="AI Investment Analyst",
@@ -30,13 +33,34 @@ st.markdown("""
         border: 1px solid #3c4043;
         border-radius: 8px;
     }
+    /* 調整 Tab 字體大小 */
+    .stTabs [data-baseweb="tab-list"] button [data-testid="stMarkdownContainer"] p {
+        font-size: 1.1rem;
+    }
     </style>
     """, unsafe_allow_html=True)
+
+# 2. 開發模式與檔案讀取
+# 設定為 True 以讀取本地 JSON 檔案，False 則呼叫 API
+USE_MOCK_DATA = True 
+MOCK_FILE_PATH = "real_data_snapshot.json" # 請確保檔案名稱正確
+
+def get_mock_data():
+    """從本地檔案讀取 JSON 快照"""
+    if os.path.exists(MOCK_FILE_PATH):
+        try:
+            with open(MOCK_FILE_PATH, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except json.JSONDecodeError:
+            st.error(f"檔案格式錯誤：無法解析 {MOCK_FILE_PATH}")
+            return None
+    else:
+        st.error(f"找不到檔案：{MOCK_FILE_PATH} (請確認檔案位於正確路徑)")
+        return None
 
 # ---------------------------------------------------------
 # Helper: 內容抽取 + 標題偵測 + Markdown 渲染
 # ---------------------------------------------------------
-
 def extract_text_from_content(content):
     """兼容字串 / LangChain content=[{'type':'text','text':...}] 結構."""
     if isinstance(content, str):
@@ -260,6 +284,9 @@ def format_large_number(num):
 
 st.title("🤖 AI 投資分析助理")
 
+if USE_MOCK_DATA:
+    st.caption(f"🛠️ 開發模式: 讀取本地檔案 `{MOCK_FILE_PATH}`")
+
 query = st.text_area(
     "請輸入您的投資問題或感興趣的股票：",
     placeholder="例如：分析台積電 (TSM) 和輝達 (NVDA) 的近期表現與風險...",
@@ -272,13 +299,24 @@ if st.button("🚀 開始分析", type="primary"):
     else:
         with st.spinner("代理人團隊正在進行深度研究..."):
             try:
-                response = requests.post("http://localhost:8000/research", json={"query": query})
-                if response.status_code == 200:
-                    st.session_state.research_result = response.json()
+                if USE_MOCK_DATA:
+                    # 讀取本地檔案
+                    import time
+                    time.sleep(0.5) # 稍微模擬一點讀取感
+                    mock_data = get_mock_data()
+                    
+                    if mock_data:
+                        st.session_state.research_result = mock_data
+                        st.success("測試資料載入完成！")
+                    # 如果讀取失敗，get_mock_data 已經有 st.error 提示了
                 else:
-                    st.error(f"API Error: {response.text}")
+                    response = requests.post("http://localhost:8000/research", json={"query": query})
+                    if response.status_code == 200:
+                        st.session_state.research_result = response.json()
+                    else:
+                        st.error(f"API Error: {response.text}")
             except Exception as e:
-                st.error(f"Connection Error: {str(e)}")
+                st.error(f"Error: {str(e)}")
 
 if 'research_result' in st.session_state:
     result = st.session_state.research_result
