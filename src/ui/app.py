@@ -36,19 +36,12 @@ st.markdown("""
     
     /* 2. Sidebar (側邊欄) 樣式優化 */
     [data-testid="stSidebar"] {
-        /* 改為比主背景 (#202124) 稍亮的顏色，避免過深 */
         background-color: #252629; 
         border-right: 1px solid #3c4043;
     }
     
     /* Sidebar 文字強制亮白 */
-    [data-testid="stSidebar"] h1,
-    [data-testid="stSidebar"] h2,
-    [data-testid="stSidebar"] h3,
-    [data-testid="stSidebar"] p,
-    [data-testid="stSidebar"] label,
-    [data-testid="stSidebar"] span,
-    [data-testid="stSidebar"] div[data-testid="stMarkdownContainer"] p {
+    [data-testid="stSidebar"] * {
         color: #ffffff !important;
     }
     
@@ -101,103 +94,69 @@ st.markdown("""
         border-color: #5f6368 !important;
     }
             
-    /* 6. 工具列 (Toolbar) 樣式優化 [新增] */
+    /* 6. 工具列 (Toolbar) 樣式優化 */
     [data-testid="stToolbar"] {
-        background-color: #202124; /* 與主背景一致 */
-        color: #e8eaed; /* 確保圖示可見 */
+        background-color: #202124;
+        color: #e8eaed;
     }
-    /*隱藏紅色的 Deploy 按鈕*/
     .stAppDeployButton {
         display: none;
     }
             
-    /* 7. Sidebar 收折/展開按鈕 (>> 與 <<) 修正 */
-    
-    /* (A) 針對左上角的展開按鈕 (您提供的 stExpandSidebarButton) */
+    /* 7. Sidebar 收折/展開按鈕修正 */
     [data-testid="stSidebarCollapsedControl"] {
-        background-color: #202124 !important; /* 外層容器背景色 */
+        background-color: #202124 !important;
         color: #ffffff !important;
     }
-
-    /* 針對按鈕本體 */
     button[data-testid="stExpandSidebarButton"] {
         background-color: transparent !important;
         border: none !important;
     }
-
-    /* 關鍵：針對內部的 Material Icon 文字 (覆蓋原有的灰色) */
     button[data-testid="stExpandSidebarButton"] [data-testid="stIconMaterial"] {
         color: #ffffff !important;
     }
-            
-    /* (B) 針對 Sidebar 內部的收折按鈕 (<<) - 新增針對 headerNoPadding 的支援 */
-    /* 包含 kind="header" 與 kind="headerNoPadding" */
+    
+    /* Sidebar 內部按鈕 */
     [data-testid="stSidebar"] button[kind="header"],
     [data-testid="stSidebar"] button[kind="headerNoPadding"],
     [data-testid="stSidebar"] button[data-testid="stBaseButton-headerNoPadding"] {
         background-color: transparent !important;
         border: none !important;
     }
-    
-    /* 強制內部 Icon 變白 */
     [data-testid="stSidebar"] button[kind="header"] [data-testid="stIconMaterial"],
     [data-testid="stSidebar"] button[kind="headerNoPadding"] [data-testid="stIconMaterial"],
     [data-testid="stSidebar"] button[data-testid="stBaseButton-headerNoPadding"] [data-testid="stIconMaterial"] {
         color: #ffffff !important;
     }
     
-    /* 8. Status Widget & Expander 樣式修正（最強覆蓋版）[修改：背景改淺灰] */
-    
-    /* (A) 設定文字與圖示顏色為黑色 (維持不變) */
+    /* 8. Status Widget & Expander 樣式修正 */
     div.stExpander summary,
     div.stExpander summary *,
     div[data-testid="stExpander"] summary,
-    div[data-testid="stExpander"] summary *,
-    div[data-testid="stExpander"] > details summary,
-    div[data-testid="stExpander"] > details summary * {
+    div[data-testid="stExpander"] summary * {
         color: #000000 !important;
         fill: #000000 !important;
         -webkit-text-fill-color: #000000 !important; 
     }
-
-    /* (B) 設定背景色 (改為淺灰色) */
     div.stExpander summary,
     div[data-testid="stExpander"] summary {
-        /* 將 #ffffff 改為 #e0e3e7 (極淺灰)，視覺更柔和 */
-        background-color: #e0e3e7 !important; 
+        background-color: #9D9D9D !important; 
         transition: background-color 0.2s ease, color 0.2s ease;
-        border-radius: 4px; /* 加一點圓角讓淺灰背景更好看 */
+        border-radius: 4px;
     }
-
-    /* (C) 確保內部文字顏色正確 (維持不變) */
-    div.stExpander summary p,
-    div.stExpander summary div[data-testid="stMarkdownContainer"] p,
-    div[data-testid="stExpander"] summary p,
-    div[data-testid="stExpander"] summary div[data-testid="stMarkdownContainer"] p {
-        color: #000000 !important;
-        -webkit-text-fill-color: #000000 !important;
-    }  
     
-    /* 9. Metric (數據指標) 樣式修正 [新增] */
-    
-    /* (A) 指標標題 (Label) - 例如：市值、本益比 */
+    /* 9. Metric (數據指標) 樣式修正 */
     [data-testid="stMetricLabel"] p {
-        color: #e8eaed !important; /* 使用亮灰白，保留一點層次感 */
+        color: #e8eaed !important;
     }
-
-    /* (B) 指標數值 (Value) - 例如：188.46億 */
     [data-testid="stMetricValue"] div {
-        color: #ffffff !important; /* 數值強制純白，強調重點 */
+        color: #ffffff !important;
     }
             
-    /* 10. Alert Container (st.info, st.success 等) 文字顏色優化 [修改：柔和灰白] */
-    
-    /* 改為 #e8eaed (柔和灰白)，避免純白過於刺眼 */
+    /* 10. Alert Container 文字顏色優化 */
     [data-testid="stAlertContainer"] {
         color: #e8eaed !important;
     }
-    
-    /* 確保容器內所有層級的文字元素顏色一致 */
     [data-testid="stAlertContainer"] p,
     [data-testid="stAlertContainer"] li,
     [data-testid="stAlertContainer"] ul,
@@ -208,11 +167,67 @@ st.markdown("""
     [data-testid="stAlertContainer"] div[data-testid="stMarkdownContainer"] {
         color: #e8eaed !important;
     }
-    
-    /* 連結維持亮藍色，確保清楚可見 */
     [data-testid="stAlertContainer"] a {
         color: #8ab4f8 !important;
     }
+
+    /* ============================================================
+       11. [修正版] Google Finance 風格 (針對 Key: main_chart_period_selector)
+       使用 :has() 選擇器來準確偵測選中狀態
+       ============================================================ */
+    
+    /* 1. 定位容器：橫向排列 */
+    .st-key-main_chart_period_selector div[role="radiogroup"] {
+        flex-direction: row !important;
+        gap: 0 !important;
+        border-bottom: 1px solid #3c4043;
+        padding-bottom: 0px;
+        margin-bottom: 15px;
+    }
+
+    /* 2. 隱藏圓圈 (Radio Circle) */
+    .st-key-main_chart_period_selector label > div:first-child {
+        display: none !important;
+    }
+
+    /* 3. 標籤基礎樣式 (Tab Base) */
+    .st-key-main_chart_period_selector label {
+        background-color: transparent !important;
+        border: none !important;
+        border-bottom: 3px solid transparent !important; /* 預留底部空間 */
+        margin: 0 !important;
+        padding: 5px 15px !important;
+        border-radius: 0 !important; /* 去除圓角 */
+        transition: all 0.2s;
+        width: auto !important;
+    }
+    
+    /* 4. 未選中時的文字顏色 */
+    .st-key-main_chart_period_selector label p {
+        color: #9aa0a6 !important;
+        font-weight: 500;
+    }
+
+    /* 5. 滑鼠懸停 (Hover) */
+    .st-key-main_chart_period_selector label:hover {
+        background-color: rgba(255,255,255,0.05) !important;
+    }
+    .st-key-main_chart_period_selector label:hover p {
+        color: #e8eaed !important;
+    }
+
+    /* 6. [關鍵修正] 選中狀態 (Checked) 
+       使用 :has(input:checked) 來偵測 label 內部是否有被選中的 input */
+    .st-key-main_chart_period_selector label:has(input:checked) {
+        border-bottom: 3px solid #8ab4f8 !important; /* 底部藍線 */
+    }
+    
+    /* 選中狀態的文字顏色 */
+    .st-key-main_chart_period_selector label:has(input:checked) p {
+        color: #8ab4f8 !important; /* 藍色文字 */
+        font-weight: bold;
+    }
+    
     </style>
     """, unsafe_allow_html=True)
 
@@ -741,43 +756,64 @@ def plot_technical_analysis(history, ticker, price_lines=None, indicator_list=No
 
 custom_divider = '<div style="border-top: 1px solid #3c4043; margin: 15px 0;"></div>'
 # ---------------------------------------------------------
-# Sidebar Configuration (Modified: 保留標題連結)
+# Sidebar Configuration
 # ---------------------------------------------------------
-
 with st.sidebar:
     st.header("⚙️ 控制面板")
     
-    # 0. 問題輸入 (連結至 #input-area)
+    # 0. 問題輸入
     st.markdown("### [<ins>問題輸入</ins>](#input-area)", unsafe_allow_html=True)
     st.markdown(custom_divider, unsafe_allow_html=True)
     
-    # 1. 市場數據 (連結至 #dashboard-area)
+    # 1. 市場數據 (連結)
     st.markdown("### [<ins>市場數據</ins>](#dashboard-area)", unsafe_allow_html=True)
-    st.caption("儀表板控制") 
     
-    period_options = {"1 天": "1d", "5 天": "5d", "1 個月": "1mo", "6 個月": "6mo", "本年迄今": "ytd", "1 年": "1y", "5 年": "5y", "最久": "max"}
-    selected_period_label = st.selectbox("時間區間", options=list(period_options.keys()), index=2)
-    selected_period_code = period_options[selected_period_label]
+    # 股票選擇器 (維持上一版的邏輯)
+    current_tickers = []
+    if 'research_result' in st.session_state:
+        current_tickers = st.session_state.research_result.get("tickers", [])
     
-    chart_type_map = {"連線圖 (Line)": "line", "K 棒圖 (Candlestick)": "candlestick"}
-    chart_type_label = st.radio("圖表類型", options=list(chart_type_map.keys()), index=0)
-    selected_chart_type = chart_type_map[chart_type_label]
+    sidebar_selected_ticker = None
+    if current_tickers:
+        if len(current_tickers) > 1:
+            st.caption("選擇分析標的")
+            sidebar_selected_ticker = st.selectbox("股票代號", options=current_tickers, label_visibility="collapsed")
+        else:
+            sidebar_selected_ticker = current_tickers[0]
+            st.caption(f"目前標的: {sidebar_selected_ticker}")
+    else:
+        st.caption("尚未進行分析")
+        
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    # --- [修改 2] 圖表類型選單 (改回原本的樣子：垂直 Radio 或一般水平) ---
+    st.caption("圖表設定") # 增加一個小標題讓排版好看
+    chart_type_map = {"Line": "line", "Candle": "candlestick"}
+    selected_chart_type_key = st.radio(
+        "圖表類型", 
+        options=list(chart_type_map.keys()), 
+        index=0,
+        horizontal=True, # 如果想要原本垂直的，把這裡改成 False
+        label_visibility="collapsed"
+    )
+    selected_chart_type = chart_type_map[selected_chart_type_key]
     
     st.markdown(custom_divider, unsafe_allow_html=True)
 
-    # 2. 投資報告 (連結至 #report-area)
+    # 2. 投資報告
     st.markdown("### [<ins>投資報告</ins>](#report-area)", unsafe_allow_html=True)
     
-    # 這裡保留 Radio，但不設定觸發捲動 Flag，僅作為內容切換
+    # --- [修改 3] "選擇章節" 只是副標題，不是按鈕 ---
+    st.caption("選擇閱讀章節") # 使用 caption 作為副標題
     report_section = st.radio(
-        "選擇章節",
+        "章節選擇隱藏標題", # 這個標題會被隱藏
         options=["📊 總覽 (Summary)", "📈 技術面 (Technical)", "📰 基本面 (Fundamental)", "🔗 原始資料 (Raw)"],
-        index=0
+        index=0,
+        label_visibility="collapsed" # 隱藏 Radio 自身的標題
     )
     
     st.markdown(custom_divider, unsafe_allow_html=True)
-    st.caption("v1.6.0 • AI Investment Analyst")
-
+    st.caption("v1.8.0 • AI Investment Analyst")
 # ---------------------------------------------------------
 # Main Application (Modified: 恢復錨點與搜尋後自動捲動)
 # ---------------------------------------------------------
@@ -862,6 +898,8 @@ if start_analysis:
                     
                     # [關鍵功能] 搜尋完成後，設定 Flag 觸發自動捲動
                     st.session_state['trigger_scroll_dashboard'] = True
+                    # --- [新增] 強制重跑以更新 Sidebar 的股票列表 ---
+                    st.rerun()
                     
                 else:
                     error_msg = response.text if not USE_MOCK_DATA and 'response' in locals() else "無法讀取數據"
@@ -877,20 +915,12 @@ if start_analysis:
 # ---------------------------------------
 if 'research_result' in st.session_state:
     result = st.session_state.research_result
-    tickers = result.get("tickers", [])
+    selected_ticker = sidebar_selected_ticker
     
-    if tickers:
-        selected_ticker = tickers[0]
-        if len(tickers) > 1:
-            st.markdown("---")
-            selected_ticker = st.radio("選擇股票", tickers, horizontal=True, label_visibility="collapsed")
-    else: selected_ticker = None
-
     stock_info = {}; history_1mo = None
     if selected_ticker:
         stock = yf.Ticker(selected_ticker)
         stock_info = stock.info
-        _, history_1mo = get_stock_data(selected_ticker, period=selected_period_code)
 
     st.markdown("---")
     
@@ -902,28 +932,59 @@ if 'research_result' in st.session_state:
     # =========================================================
     with st.expander(f"📈 市場數據儀表板 - {selected_ticker if selected_ticker else ''}", expanded=True):
         if selected_ticker and stock_info:
+            
+            # --- [修改 1] 時間區間選擇器移到這裡 (Google Style) ---
+            # 這裡的 Radio 會被上方的 CSS 自動渲染成 Tab 樣式
+            period_map = {
+                "1D": "1d", "5D": "5d", "1M": "1mo", "6M": "6mo", 
+                "YTD": "ytd", "1Y": "1y", "5Y": "5y", "Max": "max"
+            }
+            
+            # 建立幾列來排版：左邊放時間Tab，右邊(選填)可以放其他資訊
+            c_tab, c_dummy = st.columns([7, 3]) 
+            with c_tab:
+                selected_period_label = st.radio(
+                    "Time Period",
+                    options=list(period_map.keys()),
+                    index=2, # Default 1M
+                    horizontal=True,
+                    label_visibility="collapsed",
+                    key="main_chart_period_selector"
+                )
+            selected_period_code = period_map[selected_period_label]
+            
+            # 重新抓取對應時間的數據 (因為 selected_period_code 現在是在這裡定義的)
+            _, history_period = get_stock_data(selected_ticker, period=selected_period_code)
+            
+            # (以下維持原本的價格顯示與繪圖邏輯)
             current_price = stock_info.get('currentPrice', stock_info.get('regularMarketPrice', 0))
-            if history_1mo is not None and not history_1mo.empty:
-                start_p = stock_info.get('previousClose', history_1mo['Open'].iloc[0]) if selected_period_code == "1d" else history_1mo['Close'].iloc[0]
-                end_p = stock_info.get('currentPrice') if selected_period_code == "1d" and stock_info.get('currentPrice') else history_1mo['Close'].iloc[-1]
+            
+            # 計算漲跌幅邏輯...
+            if history_period is not None and not history_period.empty:
+                start_p = stock_info.get('previousClose', history_period['Open'].iloc[0]) if selected_period_code == "1d" else history_period['Close'].iloc[0]
+                end_p = stock_info.get('currentPrice') if selected_period_code == "1d" and stock_info.get('currentPrice') else history_period['Close'].iloc[-1]
                 change = end_p - start_p; change_pct = (change / start_p) * 100
             else: change = 0; change_pct = 0
             
             color_class = "#81c995" if change >= 0 else "#f28b82"; sign = "+" if change >= 0 else ""; period_text = "今天" if selected_period_code == "1d" else f"過去 {selected_period_label}"
 
+            # 顯示大字價格
             st.markdown(f"""
-                <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 10px;">
+                <div style="display: flex; align-items: baseline; gap: 10px; margin-bottom: 0px;">
                     <span style="font-size: 32px; font-weight: 600; color: #e8eaed;">{current_price:.2f}</span>
                     <span style="font-size: 14px; color: #9aa0a6;">{stock_info.get('currency', 'USD')}</span>
                     <span style="font-size: 16px; color: {color_class}; font-weight: 500;">{sign}{change:.2f} ({change_pct:.2f}%) {sign if change >=0 else '↓'} {period_text}</span>
                 </div>
             """, unsafe_allow_html=True)
 
-            if history_1mo is not None and not history_1mo.empty:
-                fig_main = plot_stock_chart(history_1mo, selected_ticker, chart_type=selected_chart_type)
+            # 繪圖
+            if history_period is not None and not history_period.empty:
+                # 使用 Sidebar 選定的 chart type
+                fig_main = plot_stock_chart(history_period, selected_ticker, chart_type=selected_chart_type)
                 st.plotly_chart(fig_main, use_container_width=True, config={'displayModeBar': False})
             else: st.warning("暫無此時段股價數據")
 
+            # 底部基本面指標 (維持原樣)
             st.markdown("<br>", unsafe_allow_html=True) 
             c1, c2, c3 = st.columns(3)
             with c1: st.metric("市值 (Market Cap)", format_large_number(stock_info.get('marketCap'))); st.metric("開盤 (Open)", f"{stock_info.get('open', '-'):.2f}" if isinstance(stock_info.get('open'), (int, float)) else "-")
@@ -958,7 +1019,7 @@ if 'research_result' in st.session_state:
             if selected_ticker:
                 history_full = get_ta_base_data(selected_ticker)
                 has_data = not history_full.empty
-                with st.expander("🔽 趨勢分析 (Trend Analysis)", expanded=False):
+                with st.expander("▶️ 趨勢分析 (Trend Analysis)", expanded=False):
                     if has_data:
                         ma20 = calculate_sma(history_full, 20); ma50 = calculate_sma(history_full, 50)
                         one_year_ago = datetime.now() - timedelta(days=365)
@@ -980,8 +1041,22 @@ if 'research_result' in st.session_state:
             else: st.warning("未識別股票代號。")
 
         elif report_section == "📰 基本面 (Fundamental)":
-            with st.expander("📰 新聞摘要 (Narrative)", expanded=True): render_sections_markdown(result.get("news_analysis", "暫無新聞分析"))
             with st.expander("📊 數據分析 (Numbers)", expanded=False): render_sections_markdown(result.get("data_analysis", "暫無數據分析"))
+            with st.expander("📰 新聞摘要 (Narrative)", expanded=True): 
+                raw_news = extract_text_from_content(result.get("news_analysis", "暫無新聞分析"))
+                
+                # --- [修改] 遇到 "新聞連結 (新聞連結)" 就直接切斷後面的內容 ---
+                # 這裡設定幾個可能的標題變體以防 Markdown 格式不同
+                pattern = r"(?:#+|\*\*|__)?\s*新聞連結\s*[(\uff08].*?新聞連結.*"
+                
+                # 使用 re.split 切割，只取第一部分 (匹配到的標題之前的所有內容)
+                # flags=re.IGNORECASE 讓比對不分大小寫
+                parts = re.split(pattern, raw_news, maxsplit=1, flags=re.IGNORECASE)
+                
+                clean_news = parts[0].strip()
+                
+                render_sections_markdown(clean_news)
+            
 
         elif report_section == "🔗 原始資料 (Raw)":
             st.markdown("### 🔗 參考來源")
