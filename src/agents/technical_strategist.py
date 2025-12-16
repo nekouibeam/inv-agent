@@ -11,29 +11,56 @@ def technical_strategist_node(state: AgentState):
     """
     llm = get_llm(temperature=0)
     
-    system_prompt = """您是一位資深技術策略師，負責將各項技術分析 (趨勢、型態、指標) 整合為一個連貫且具有行動力的交易觀點。
-    您的目標是根據所有技術分析的結果，為用戶的投資決策提供一個清晰的技術總結。
+    # New: Get investment style and define rating rules
+    style = state.get("investment_style", "Balanced")
+
+    style_rules = {
+        "Conservative": """
+        **RATING RULES: CONSERVATIVE (保守型)**
+        - **BUY Condition**: Must have all (Trend, Pattern, Indicator) signals **strongly Bullish**, and the price must be far from the 90-day resistance level.
+        - **SELL Condition**: Consider SELL or HOLD if even one major signal is Bearish (e.g., breaking below a key MA), or if indicators show **Overbought** conditions.
+        - **Recommendation Tendency**: Leans towards NEUTRAL or BEARISH, avoids chasing highs.
+        """,
+        "Aggressive": """
+        **RATING RULES: AGGRESSIVE (積極型)**
+        - **BUY Condition**: As long as the trend is clearly upward, a BUY recommendation is justified, even if indicators are temporarily overbought or a short-term consolidation pattern appears.
+        - **SELL Condition**: Only consider SELL if the price breaks below the long-term trend line or a **decisive reversal pattern** emerges.
+        - **Recommendation Tendency**: Leans towards BULLISH, provided there are no decisive bearish technical signals.
+        """,
+        "Balanced": """
+        **RATING RULES: BALANCED (穩健型)**
+        - **BUY/HOLD Condition**: At least two out of the three (Trend, Pattern, Indicator) signals must be Bullish, and indicator signals must not diverge from the price.
+        """
+    }
+    current_rule = style_rules.get(style, style_rules["Balanced"])
+
+    # Modified system_prompt to be in English and include the style rule
+    system_prompt = f"""You are a Senior Technical Strategist, responsible for integrating various technical analyses (Trend, Pattern, Indicator) into a coherent and actionable trading view. (您是一位資深技術策略師，負責將各項技術分析整合為一個連貫且具有行動力的交易觀點。)
+    Your goal is to provide a clear technical summary for the user's investment decision based on all technical analysis results.
     
-    輸入包含：
+    **Current Investment Strategy: {style}**
+    {current_rule}
+
+    Inputs include:
     - Trend Analysis (趨勢分析)
     - Pattern Analysis (型態分析)
     - Indicator Analysis (指標分析)
     
-    整合這些資訊，並回答以下關鍵問題：
-    1. **整體技術評級**: 當前短線 (1週) 和中線 (1個月) 的技術評級是看漲 (Bullish)、看跌 (Bearish) 還是中性 (Neutral)?
-    2. **交易策略**: 建議的交易策略是什麼？(例如：逢低買入、等待突破、觀望、減碼)。
-    3. **技術總結**: 整理最一致和最矛盾的技術信號。
+    Integrate this information and answer the following key questions:
+    1. **Overall Technical Rating**: What is the short-term (1 week) and medium-term (1 month) technical rating: Bullish (看漲), Bearish (看跌), or Neutral (中性)? (**Must strictly adhere to the {style} rating rules**).
+    2. **Trading Strategy**: What is the recommended trading strategy? (e.g., Buy on dips, Wait for breakout, Observe, Reduce position).
+    3. **Technical Summary**: Organize the most consistent and most contradictory technical signals.
     
-    輸出結構化的分析報告，語言為**Traditional Chinese (繁體中文)**。
+    Output a structured analysis report in **Traditional Chinese (繁體中文)**.
     
     **CRITICAL OUTPUT FORMAT**:
-    - **技術總結 (Technical Summary)**: 一個段落總結技術面是看漲還是看跌。
-    - **短線技術評級 (Short-Term Rating)**: BULLISH / NEUTRAL / BEARISH，並附上主要理由。
-    - **建議策略 (Recommended Strategy)**: 具體的交易行動建議。
-    - **技術信號一致性 (Signal Consistency)**: 列出多頭和空頭信號。
+    - **Technical Summary (技術總結)**: A paragraph summarizing whether the technical outlook is bullish or bearish.
+    - **Short-Term Technical Rating (短線技術評級)**: BULLISH / NEUTRAL / BEARISH, with main justifications.
+    - **Recommended Strategy (建議策略)**: Specific trading action advice.
+    - **Signal Consistency (技術信號一致性)**: List bullish and bearish signals.
     
     **IMPORTANT**: 
-    開始時直接進入分析。
+    Start directly with the analysis.
     """
     
     # Create the agent

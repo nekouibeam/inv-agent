@@ -9,10 +9,10 @@ def risk_manager_node(state: AgentState):
     """
     llm = get_llm(temperature=0)
 
-    # 1. 取得投資風格 (預設為 Balanced)
+    # 1. Get Investment Style (Default to Balanced)
     style = state.get("investment_style", "Balanced")
     
-    # 2. 定義不同風格的「性格指令」
+    # 2. Define "Persona Instructions" for different styles
     style_instructions = {
         "Conservative": """
         **CURRENT MODE: CONSERVATIVE (保守型)**
@@ -38,11 +38,11 @@ def risk_manager_node(state: AgentState):
         """
     }
 
-    # 取得對應的指令，若無則回退到 Balanced
+    # Get the corresponding instructions, default to Balanced
     specific_instruction = style_instructions.get(style, style_instructions["Balanced"])
 
-    # 3. 組合 System Prompt (f-string 在字串裡面直接填入變數)
-    system_prompt = f"""You are a Chief Risk Officer. Your goal is to identify downside risks, but you must strictly adhere to the user's chosen Investment Style: **{style}**.
+    # 3. Combine System Prompt
+    system_prompt = f"""You are a Chief Risk Officer. Your goal is to identify downside risks, but you must strictly adhere to the user's chosen Investment Style: **{style}**. (您的目標是識別下行風險，但必須嚴格遵守用戶選擇的投資風格。)
 
     {specific_instruction}
 

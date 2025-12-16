@@ -8,10 +8,10 @@ def editor_node(state: AgentState):
     """
     llm = get_llm(temperature=0)
     
-    # 1. 取得投資風格 (預設為 Balanced)
+    # 1. Get Investment Style (Default to Balanced)
     style = state.get("investment_style", "Balanced")
     
-    # 2. 定義不同風格的寫作準則
+    # 2. Define Writing Guidelines for different styles
     style_guidelines = {
         "Conservative": """
         **STYLE MODE: CONSERVATIVE (保守型)**
@@ -37,7 +37,7 @@ def editor_node(state: AgentState):
     current_guideline = style_guidelines.get(style, style_guidelines["Balanced"])
 
     system_prompt = f"""You are the Chief Editor of a prestigious investment research firm (like Goldman Sachs or Morgan Stanley).
-    Your goal is to compile a comprehensive "Sell-Side" Investment Report, **specifically addressing the user's question**.
+    Your goal is to compile a comprehensive "Sell-Side" Investment Report, **specifically addressing the user's question**. (您的目標是編寫一份全面的「賣方」投資報告，特別針對用戶的問題。)
     
     **Current Investment Strategy: {style}**
     {current_guideline}

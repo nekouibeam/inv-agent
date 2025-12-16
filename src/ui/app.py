@@ -1059,13 +1059,7 @@ if 'research_result' in st.session_state:
             
 
         elif report_section == "🔗 原始資料 (Raw)":
-            st.markdown("### 🔗 參考來源")
-            news_content = extract_text_from_content(result.get("news_analysis", ""))
-            links = re.findall(r'\[([^\]]+)\]\((http[^\)]+)\)', news_content)
-            if links:
-                for title, url in links: st.markdown(f"- [{title}]({url})")
-            else: st.caption("報告中未檢測到明確的新聞連結。")
-            st.markdown("---")
+            # 根據使用者要求，移除「🔗 參考來源」及其連結內容
             with st.expander("查看原始 JSON 回應 (Debug)"): st.json(result)
 
 # =========================================================
