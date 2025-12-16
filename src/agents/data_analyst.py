@@ -8,12 +8,38 @@ def data_analyst_node(state: AgentState):
     Finance Data Analyst that gathers and analyzes market data using a ReAct agent.
     """
     llm = get_llm(temperature=0)
-    # 2. 修改這裡：更新工具列表
     tools = [get_stock_analysis_data]
     
-    # 3. 修改這裡：System Prompt 大幅優化，強調「長期趨勢」與「歷史比較」
-    system_prompt = """You are a Senior Financial Data Analyst at a top-tier investment bank.
+    # New: Get investment style and define analysis guidelines
+    style = state.get("investment_style", "Balanced")
+
+    style_guidelines = {
+        "Conservative": """
+        **STYLE GUIDELINE: CONSERVATIVE (保守型)**
+        - **Primary Focus**: Financial Health and Stability (財務體質與穩定性).
+        - **Analysis Requirement**: Strictly check Debt Ratios and Cash Flow Coverage. Emphasize the **stability of margins** over explosive growth.
+        - **Valuation Requirement**: Must rigorously scrutinize if P/E is far above historical averages.
+        """,
+        "Aggressive": """
+        **STYLE GUIDELINE: AGGRESSIVE (積極型)**
+        - **Primary Focus**: Growth Potential (成長潛力) and Efficiency.
+        - **Analysis Requirement**: Rigorously check Revenue and Earnings **growth trajectories**. Tolerate higher valuations, but require proof that ROE or operating margins are **expanding**.
+        - **Valuation Requirement**: Focus on growth-related multiples like PEG or EV/EBITDA.
+        """,
+        "Balanced": """
+        **STYLE GUIDELINE: BALANCED (穩健型)**
+        - **Primary Focus**: Growth at a Reasonable Price (GARP). (風險調整後回報).
+        - **Analysis Requirement**: Balance the check of financial health and growth trends. Emphasize that valuation must be reasonable.
+        """
+    }
+    current_guideline = style_guidelines.get(style, style_guidelines["Balanced"])
+    
+    # Modified system_prompt to be in English and include the style guideline
+    system_prompt = f"""You are a Senior Financial Data Analyst at a top-tier investment bank.
     Your goal is to provide a rigorous quantitative analysis of the provided tickers, **specifically addressing the user's question** with a focus on LONG-TERM TRENDS.
+    
+    **Current Investment Strategy: {style}**
+    {current_guideline}
     
     1. **Data Retrieval**: Use the `get_stock_analysis_data` tool to fetch 5-year historical data.
     
@@ -46,7 +72,6 @@ def data_analyst_node(state: AgentState):
     """
 
     # Create the agent
-    # 注意：請確認你的 create_agent 函數支援這種調用方式 (通常 LangChain 較新版本可能需要 create_react_agent 或類似)
     agent = create_agent(
         model=llm,
         tools=tools,
@@ -68,5 +93,4 @@ def data_analyst_node(state: AgentState):
     result = agent.invoke({"messages": [("human", user_message)]})
     
     last_message = result["messages"][-1]
-    # print(last_message) # 可以保留做為 debug
     return {"data_analysis": last_message.content}
